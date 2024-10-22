@@ -25,6 +25,21 @@ class DBConfig(BaseModel):
         return f'postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}'
 
 
+class CORSConfig(BaseModel):
+    allow_origins: list[str]
+    allow_credentials: bool = True
+    allow_headers: list[str] = ["*"]
+    allow_methods: list[str] = ["*"]
+
+
+class RedisConfig(BaseModel):
+    url: str
+
+
+class AuthConfig(BaseModel):
+    session_lifetime_hours: int = 24
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -36,6 +51,11 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     db: DBConfig
     hash: HashConfig = HashConfig()
+
+    cors: CORSConfig
+    redis: RedisConfig
+
+    auth: AuthConfig = AuthConfig()
 
 
 _settings = None

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <script>
+        async function fetchUserData() {
+            try {
+                const response = await fetch('/api/get_me', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail}`);
+                    redirectToLogin();
+                    return;
+                }
+
+                const data = await response.json();
+                displayUserData(data);
+
+            } catch (error) {
+                redirectToLogin();
+            }
+        }
+
+        function displayUserData(data) {
+            document.getElementById('user-id').textContent = `ID: ${data.id}`;
+            document.getElementById('user-name').textContent = `Name: ${data.name}`;
+            document.getElementById('user-username').textContent = `Username: ${data.username}`;
+            addLogoutButton();
+        }
+
+        function redirectToLogin() {
+            window.location.href = '/login';
+        }
+
+        function addLogoutButton() {
+            const button = document.createElement('button');
+            button.textContent = 'Log Out';
+            button.onclick = logout;
+            document.body.appendChild(button);
+        }
+
+        function logout() {
+            document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+            window.location.reload();
+        }
+
+        window.onload = fetchUserData;
+    </script>
+</head>
+<body>
+<h2>User Profile</h2>
+<p id="user-id"></p>
+<p id="user-name"></p>
+<p id="user-username"></p>
+</body>
+</html>

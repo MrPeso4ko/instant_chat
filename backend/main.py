@@ -3,7 +3,8 @@ import uvicorn
 from app import App
 from config import get_settings
 
-app = App()
+app = App(openapi_url="/api/openapi.json",
+          title="Instant chat API")
 settings = get_settings()
 
 

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <script>
+        async function registerUser() {
+            const name = document.getElementById('name').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    username: username,
+                    password: password,
+                }),
+            });
+
+            if (response.ok) {
+                alert('Registration successful!');
+                redirectToRoot();
+            } else {
+                const error = await response.json();
+                alert(`Registration failed: ${error.detail}`);
+            }
+        }
+
+        function redirectToRoot() {
+            window.location.href = '/';
+        }
+
+        function redirectToLogin() {
+            window.location.href = '/login';
+        }
+    </script>
+</head>
+<body>
+<h2>Registration Form</h2>
+<form onsubmit="event.preventDefault(); registerUser();">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name" required><br><br>
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" required><br><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+    <button type="submit">Register</button>
+    <button type="button" onclick="redirectToLogin()">Already registered? Log in</button>
+</form>
+</body>
+</html>
