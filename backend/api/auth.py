@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Request
 
+from api.deps import get_current_user
 from common.response_model import status_model, exception_model
-from exc import UserAlreadyExists, UserNotFound, IncorrectPassword, SessionNotFound
+from exc import UserAlreadyExists, UserNotFound, IncorrectPassword
 from serializer import UserGet
 from serializer.user import UserCreate, UserAuth
 from service import AuthService
@@ -32,9 +33,7 @@ async def log_in(request: Request, auth_data: UserAuth, auth_service: Annotated[
     except IncorrectPassword:
         raise HTTPException(401, "Incorrect password or username")
 
+
 @auth_router.get("/get_me", responses={401: exception_model("Unauthorized")})
-async def get_me(auth_service: Annotated[AuthService, Depends()], session_id: Annotated[str, Cookie()] = "", ) -> UserGet:
-    try:
-        return await auth_service.get_me(session_id)
-    except SessionNotFound as e:
-        raise HTTPException(401, "Unauthorized")
+async def get_me(current_user: Annotated[UserGet, Depends(get_current_user)]) -> UserGet:
+    return current_user

@@ -1,9 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
+    <style>
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .profile-section {
+            width: 33%;
+            padding: 20px;
+        }
+
+        .chat-list-section {
+            width: 67%;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #ccc;
+        }
+
+        .chat-input-panel {
+            flex: none;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+    </style>
     <script>
         async function fetchUserData() {
             try {
@@ -23,6 +54,7 @@
 
                 const data = await response.json();
                 displayUserData(data);
+                fetchChats(data.id);
 
             } catch (error) {
                 redirectToLogin();
@@ -41,10 +73,15 @@
         }
 
         function addLogoutButton() {
-            const button = document.createElement('button');
-            button.textContent = 'Log Out';
-            button.onclick = logout;
-            document.body.appendChild(button);
+            // Check if the button already exists
+            if (!document.getElementById('logout-button')) {
+                const button = document.createElement('button');
+                button.id = 'logout-button';
+                button.textContent = 'Log Out';
+                button.onclick = logout;
+                // Append the button after the user information
+                document.querySelector('.profile-section').appendChild(button);
+            }
         }
 
         function logout() {
@@ -52,13 +89,95 @@
             window.location.reload();
         }
 
+        async function fetchChats(currentUserId) {
+            try {
+                const response = await fetch('/api/chats', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail}`);
+                    return;
+                }
+
+                const chats = await response.json();
+                displayChats(chats, currentUserId);
+
+            } catch (error) {
+                alert('Error fetching chats.');
+            }
+        }
+
+        function displayChats(chats, currentUserId) {
+            const chatList = document.getElementById('chat-list');
+            chatList.innerHTML = ''; // Clear existing chat list
+
+            chats.forEach(chat => {
+                const chatParticipant =
+                    chat.first_user.id === currentUserId
+                        ? chat.second_user
+                        : chat.first_user;
+
+                const listItem = document.createElement('li');
+                listItem.textContent = chatParticipant.name;
+                chatList.appendChild(listItem);
+            });
+        }
+
+        async function createChat() {
+            const nameInput = document.getElementById('chat-name');
+            const name = nameInput.value;
+
+            try {
+                const response = await fetch(`/api/chats?name=${name}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail}`);
+                    return;
+                }
+
+                nameInput.value = '';
+                fetchUserData();
+
+            } catch (error) {
+                alert('Error creating chat.');
+            }
+        }
+
         window.onload = fetchUserData;
     </script>
 </head>
+
 <body>
-<h2>User Profile</h2>
-<p id="user-id"></p>
-<p id="user-name"></p>
-<p id="user-username"></p>
+<div class="container">
+    <div class="profile-section">
+        <h2>User Profile</h2>
+        <p id="user-id"></p>
+        <p id="user-name"></p>
+        <p id="user-username"></p>
+    </div>
+
+    <div class="chat-list-section">
+        <div class="chat-input-panel">
+            <input type="text" id="chat-name" placeholder="Name" />
+            <button type="button" onclick="createChat()">Add Chat</button>
+        </div>
+        <div class="chat-list">
+            <h2>Chats</h2>
+            <ul id="chat-list"></ul>
+        </div>
+    </div>
+</div>
 </body>
+
 </html>

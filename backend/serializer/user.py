@@ -8,20 +8,29 @@ class UserAuth(BaseModel):
 
 class BaseUser(BaseModel):
     name: str
-    username: str
 
 
-class UserCreate(BaseUser):
-    password: str
-
-
-class UserGet(BaseUser):
+class BaseUserGet(BaseUser):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
 
 
-class UserDB(BaseUser):
+class ExtendedUser(BaseUser):
+    username: str
+
+
+class UserCreate(ExtendedUser):
+    password: str
+
+
+class UserGet(ExtendedUser):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+
+
+class UserDB(ExtendedUser):
     model_config = ConfigDict(from_attributes=True)
 
     hashed_password: bytes

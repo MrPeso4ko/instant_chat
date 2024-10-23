@@ -36,7 +36,7 @@ class AuthService:
 
     async def check_auth(self, request: Request, user: UserAuth) -> JSONResponse:
         try:
-            user_db = await self.user_repository.get_by_username(user.username)
+            user_db = await self.user_repository.get_by_username_db(user.username)
         except NoResultFound as e:
             raise UserNotFound(e)
 

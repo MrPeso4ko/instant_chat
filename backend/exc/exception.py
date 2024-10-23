@@ -16,3 +16,6 @@ class IncorrectPassword(Exception):
 
 class SessionNotFound(Exception):
     pass
+
+class WrongChatUsers(Exception):
+    pass
