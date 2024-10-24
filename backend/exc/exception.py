@@ -19,3 +19,6 @@ class SessionNotFound(Exception):
 
 class WrongChatUsers(Exception):
     pass
+
+class ChatNotFound(Exception):
+    pass

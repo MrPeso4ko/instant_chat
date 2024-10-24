@@ -1,11 +1,11 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from exc import WrongChatUsers
+from exc import WrongChatUsers, ChatNotFound
 from repository import ChatRepository
-from serializer import UserGet, ChatCreateDB, ChatGet
+from serializer import UserGet, ChatCreateDB, ChatGet, ChatGetExtended
 
 
 class ChatsService:
@@ -25,3 +25,9 @@ class ChatsService:
             return await self.chat_repository.create(chat)
         except IntegrityError:
             raise WrongChatUsers("Chat already exists")
+
+    async def get_chat(self, chat_id: int) -> ChatGetExtended:
+        try:
+            return await self.chat_repository.get_by_id(chat_id)
+        except NoResultFound:
+            raise ChatNotFound

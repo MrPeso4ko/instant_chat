@@ -1,8 +1,10 @@
 from sqlalchemy import select, or_
+from sqlalchemy.orm import joinedload
 
 from model import Chat
 from repository.base import BaseRepository
 from serializer import ChatCreateDB, ChatGet
+from serializer import ChatGetExtended
 
 
 class ChatRepository(BaseRepository):
@@ -16,7 +18,7 @@ class ChatRepository(BaseRepository):
         res = await self.session.execute(query)
         return [ChatGet.model_validate(chat) for chat in res.scalars().all()]
 
-    # async def get_by_username(self, username: str) -> UserGetDB:
-    #     query = select(self.model).where(self.model.username == username)
-    #     res = await self.session.execute(query)
-    #     return UserGetDB.model_validate(res.scalar_one())
+    async def get_by_id(self, chat_id: int) -> ChatGetExtended:
+        query = select(self.model).where(self.model.id == chat_id).options(joinedload(Chat.messages))
+        res = await self.session.execute(query)
+        return ChatGetExtended.model_validate(res.unique().scalar_one())

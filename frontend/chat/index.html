@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .message.current-user {
+            justify-content: flex-end;
+        }
+
+        .message.other-user {
+            justify-content: flex-start;
+        }
+
+        .message .text {
+            max-width: 60%;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message.current-user .text {
+            background-color: #d1e7dd;
+        }
+
+        .message.other-user .text {
+            background-color: #f8d7da;
+        }
+
+        .timestamp {
+            color: gray;
+            font-size: 0.8em;
+            margin: 0 10px;
+        }
+    </style>
+    <script>
+        async function fetchChatData(chatId) {
+            try {
+                const userResponse = await fetch('/api/get_me');
+                const userData = await userResponse.json();
+
+                const chatResponse = await fetch(`/api/chats/${chatId}`);
+                const chatData = await chatResponse.json();
+
+                displayChatHeader(userData, chatData);
+                displayMessages(userData.id, chatData.messages);
+
+            } catch (error) {
+                alert('Error fetching chat data.');
+            }
+        }
+
+        function displayChatHeader(userData, chatData) {
+            const chatHeader = document.getElementById('chat-header');
+            const otherUser = chatData.first_user.id === userData.id ? chatData.second_user : chatData.first_user;
+            chatHeader.textContent = `Чат с ${otherUser.name}`;
+        }
+
+        function displayMessages(currentUserId, messages) {
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '';
+
+            messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message ' + (message.from_user_id === currentUserId ? 'current-user' : 'other-user');
+
+                const textElement = document.createElement('div');
+                textElement.className = 'text';
+                textElement.textContent = message.text;
+
+                const timestampElement = document.createElement('div');
+                timestampElement.className = 'timestamp';
+                timestampElement.textContent = new Date(message.created_at).toLocaleString();
+
+                messageElement.appendChild(textElement);
+                messageElement.appendChild(timestampElement);
+                messagesContainer.appendChild(messageElement);
+            });
+        }
+
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get('chat_id');
+            if (chatId) {
+                fetchChatData(chatId);
+            } else {
+                alert('Chat ID is missing in the URL.');
+            }
+        };
+    </script>
+</head>
+
+<body>
+<div class="container">
+    <h2 id="chat-header">Чат с...</h2>
+    <div class="messages" id="messages"></div>
+</div>
+</body>
+
+</html>

@@ -73,13 +73,11 @@
         }
 
         function addLogoutButton() {
-            // Check if the button already exists
             if (!document.getElementById('logout-button')) {
                 const button = document.createElement('button');
                 button.id = 'logout-button';
                 button.textContent = 'Log Out';
                 button.onclick = logout;
-                // Append the button after the user information
                 document.querySelector('.profile-section').appendChild(button);
             }
         }
@@ -114,7 +112,7 @@
 
         function displayChats(chats, currentUserId) {
             const chatList = document.getElementById('chat-list');
-            chatList.innerHTML = ''; // Clear existing chat list
+            chatList.innerHTML = '';
 
             chats.forEach(chat => {
                 const chatParticipant =
@@ -122,11 +120,16 @@
                         ? chat.second_user
                         : chat.first_user;
 
+                // Обернуть элемент <a> в <li>
                 const listItem = document.createElement('li');
-                listItem.textContent = chatParticipant.name;
+                const link = document.createElement('a');
+                link.href = `/chat/${chatParticipant.id}`;
+                link.textContent = chatParticipant.name;
+                listItem.appendChild(link);
                 chatList.appendChild(listItem);
             });
         }
+
 
         async function createChat() {
             const nameInput = document.getElementById('chat-name');

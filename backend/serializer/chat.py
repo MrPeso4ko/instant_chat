@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
-from serializer import BaseUserGet
+from serializer.user import BaseUserGet
+from serializer.message import MessageGet
 
 
 class BaseChat(BaseModel):
@@ -12,6 +13,10 @@ class ChatGet(BaseChat):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
+
+class ChatGetExtended(ChatGet):
+    messages: list[MessageGet]
 
 
 class ChatDB(BaseModel):
