@@ -8,13 +8,32 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-        }
-
-        .container {
             display: flex;
             flex-direction: column;
             height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             padding: 20px;
+            padding-bottom: 60px;
+            padding-top: 60px;
+        }
+
+        .chat-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            font-size: xx-large;
+            font-weight: bold;
+            background-color: #f9f9f9;
+            padding: 10px 20px;
+            border-bottom: 1px solid #ccc;
+            z-index: 1000;
         }
 
         .messages {
@@ -23,6 +42,7 @@
             margin-bottom: 20px;
             border: 1px solid #ccc;
             padding: 10px;
+            margin-top: 60px;
         }
 
         .message {
@@ -58,18 +78,53 @@
             font-size: 0.8em;
             margin: 0 10px;
         }
+
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .input-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+        }
     </style>
     <script>
+        let currentUserId;
+
         async function fetchChatData(chatId) {
             try {
                 const userResponse = await fetch('/api/get_me');
                 const userData = await userResponse.json();
+                currentUserId = userData.id;
 
                 const chatResponse = await fetch(`/api/chats/${chatId}`);
                 const chatData = await chatResponse.json();
 
                 displayChatHeader(userData, chatData);
-                displayMessages(userData.id, chatData.messages);
+                displayMessages(chatData.messages);
 
             } catch (error) {
                 alert('Error fetching chat data.');
@@ -82,26 +137,55 @@
             chatHeader.textContent = `Чат с ${otherUser.name}`;
         }
 
-        function displayMessages(currentUserId, messages) {
+        function displayMessages(messages) {
             const messagesContainer = document.getElementById('messages');
             messagesContainer.innerHTML = '';
 
             messages.forEach(message => {
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message ' + (message.from_user_id === currentUserId ? 'current-user' : 'other-user');
-
-                const textElement = document.createElement('div');
-                textElement.className = 'text';
-                textElement.textContent = message.text;
-
-                const timestampElement = document.createElement('div');
-                timestampElement.className = 'timestamp';
-                timestampElement.textContent = new Date(message.created_at).toLocaleString();
-
-                messageElement.appendChild(textElement);
-                messageElement.appendChild(timestampElement);
-                messagesContainer.appendChild(messageElement);
+                appendMessageToChat(message);
             });
+        }
+
+        function appendMessageToChat(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message ' + (message.from_user_id === currentUserId ? 'current-user' : 'other-user');
+
+            const textElement = document.createElement('div');
+            textElement.className = 'text';
+            textElement.textContent = message.text;
+
+            const timestampElement = document.createElement('div');
+            timestampElement.className = 'timestamp';
+            timestampElement.textContent = new Date(message.created_at).toLocaleString();
+
+            messageElement.appendChild(textElement);
+            messageElement.appendChild(timestampElement);
+            messagesContainer.appendChild(messageElement);
+
+            window.scrollTo(0, window.scrollMaxY);
+        }
+
+
+        async function sendMessage(chatId, messageText) {
+            try {
+                const response = await fetch(`/api/chats/${chatId}/send_message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({text: messageText}),
+                });
+
+                if (response.ok) {
+                    const newMessage = await response.json();
+                    appendMessageToChat(newMessage);
+                } else {
+                    alert('Error sending message.');
+                }
+            } catch (error) {
+                alert('Error sending message.');
+            }
         }
 
         window.onload = () => {
@@ -112,15 +196,36 @@
             } else {
                 alert('Chat ID is missing in the URL.');
             }
+
+            const sendButton = document.getElementById('send-button');
+            sendButton.addEventListener('click', () => {
+                const messageInput = document.getElementById('message-input');
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    sendMessage(chatId, messageText);
+                    messageInput.value = '';
+                }
+            });
+
+            const messageInput = document.getElementById('message-input');
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendButton.click();
+                }
+            });
         };
     </script>
 </head>
 
 <body>
-<div class="container">
-    <h2 id="chat-header">Чат с...</h2>
-    <div class="messages" id="messages"></div>
-</div>
+    <div class="container">
+        <div class="chat-header" id="chat-header">Чат с...</div>
+        <div class="messages" id="messages"></div>
+        <div class="input-container">
+            <input type="text" id="message-input" placeholder="Введите сообщение..." />
+            <button id="send-button">Отправить</button>
+        </div>
+    </div>
 </body>
 
 </html>

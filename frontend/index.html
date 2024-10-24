@@ -120,10 +120,9 @@
                         ? chat.second_user
                         : chat.first_user;
 
-                // Обернуть элемент <a> в <li>
                 const listItem = document.createElement('li');
                 const link = document.createElement('a');
-                link.href = `/chat/${chatParticipant.id}`;
+                link.href = `/chat?chat_id=${chat.id}`;
                 link.textContent = chatParticipant.name;
                 listItem.appendChild(link);
                 chatList.appendChild(listItem);

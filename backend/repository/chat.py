@@ -18,7 +18,10 @@ class ChatRepository(BaseRepository):
         res = await self.session.execute(query)
         return [ChatGet.model_validate(chat) for chat in res.scalars().all()]
 
-    async def get_by_id(self, chat_id: int) -> ChatGetExtended:
+    async def get_by_id(self, chat_id: int) -> ChatGet:
+        return ChatGet.model_validate(await super(ChatRepository, self).get_by_id(chat_id))
+
+    async def get_by_id_extended(self, chat_id: int) -> ChatGetExtended:
         query = select(self.model).where(self.model.id == chat_id).options(joinedload(Chat.messages))
         res = await self.session.execute(query)
         return ChatGetExtended.model_validate(res.unique().scalar_one())

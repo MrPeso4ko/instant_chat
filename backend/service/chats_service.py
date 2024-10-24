@@ -26,8 +26,14 @@ class ChatsService:
         except IntegrityError:
             raise WrongChatUsers("Chat already exists")
 
-    async def get_chat(self, chat_id: int) -> ChatGetExtended:
+    async def get_chat(self, chat_id: int) -> ChatGet:
         try:
             return await self.chat_repository.get_by_id(chat_id)
+        except NoResultFound:
+            raise ChatNotFound
+
+    async def get_chat_extended(self, chat_id: int) -> ChatGetExtended:
+        try:
+            return await self.chat_repository.get_by_id_extended(chat_id)
         except NoResultFound:
             raise ChatNotFound
