@@ -43,7 +43,7 @@ async def send_message(current_user: Annotated[UserGet, Depends(get_current_user
     if chat.first_user.id != current_user.id and chat.second_user.id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    return await messages_service.create_message(current_user, chat_id, message)
+    return await messages_service.create_message(current_user, chat, message)
 
 
 @chat_router.post("")

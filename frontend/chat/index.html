@@ -113,6 +113,7 @@
     </style>
     <script>
         let currentUserId;
+        let websocket;
 
         async function fetchChatData(chatId) {
             try {
@@ -163,7 +164,7 @@
             messageElement.appendChild(timestampElement);
             messagesContainer.appendChild(messageElement);
 
-            window.scrollTo(0, window.scrollMaxY);
+            window.scrollTo(0, document.body.scrollHeight);
         }
 
 
@@ -188,7 +189,19 @@
             }
         }
 
+        function setupWebSocket() {
+            websocket = new WebSocket(`ws://${window.location.hostname}/api/websocket`);
+
+            websocket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                appendMessageToChat(message);
+            };
+
+        }
+
+
         window.onload = () => {
+            setupWebSocket()
             const urlParams = new URLSearchParams(window.location.search);
             const chatId = urlParams.get('chat_id');
             if (chatId) {
